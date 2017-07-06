@@ -47,9 +47,9 @@ namespace AuthorizeNet.Api.Controllers.Bases
 	        _responseClass = typeof(TS);// GetResponseType();
 		    SetApiRequest(apiRequest);
 		
-		    Logger.info(string.Format("Creating instance for request:'{0}' and response:'{1}'", _requestClass, _responseClass));
-		    Logger.info(string.Format("Request:'{0}'", apiRequest));
-            Logger.info(string.Format("Request:'{0}'", XmlUtility.GetXml(apiRequest)));
+		    Logger.debug(string.Format("Creating instance for request:'{0}' and response:'{1}'", _requestClass, _responseClass));
+            //Logger.debug(string.Format("Request:'{0}'", apiRequest));
+            //Logger.debug(string.Format("Request(Ctor):'{0}'", XmlUtility.GetXml(apiRequest)));
 		    Validate();
 	    }
 	
@@ -87,37 +87,37 @@ namespace AuthorizeNet.Api.Controllers.Bases
 
         public void Execute(AuthorizeNet.Environment environment = null)
         {
-		    Logger.info(string.Format(CultureInfo.InvariantCulture, "Executing Request:'{0}'", GetApiRequest()));
+            BeforeExecute();
+
+            //Logger.debug(string.Format(CultureInfo.InvariantCulture, "Executing Request:'{0}'", XmlUtility.GetXml(GetApiRequest())));
 
             if (null == environment) { environment = ApiOperationBase<ANetApiRequest, ANetApiResponse>.RunEnvironment; }
             if (null == environment) throw new ArgumentException(NullEnvironmentErrorMessage);
-
-		    BeforeExecute();
 
             var httpApiResponse = HttpUtility.PostData<TQ, TS>(environment, GetApiRequest());
 
             if (null != httpApiResponse)
 		    {
-                Logger.info(string.Format(CultureInfo.InvariantCulture, "Received Response:'{0}' for request:'{1}'", httpApiResponse, GetApiRequest()));
+                Logger.debug(string.Format(CultureInfo.InvariantCulture, "Received Response:'{0}' for request:'{1}'", httpApiResponse, GetApiRequest()));
                 if (httpApiResponse.GetType() == _responseClass)
 			    {
                     var response = (TS) httpApiResponse;
 				    SetApiResponse( response);
-				    Logger.info(string.Format(CultureInfo.InvariantCulture, "Setting response: '{0}'", response));
+                    Logger.debug(string.Format(CultureInfo.InvariantCulture, "Setting response: '{0}'", response));
                 }
                 else if (httpApiResponse.GetType() == typeof(AuthorizeNet.Api.Controllers.Bases.ErrorResponse))
                 {
                     SetErrorResponse(httpApiResponse);
-                    Logger.info(string.Format(CultureInfo.InvariantCulture, "Received ErrorResponse:'{0}'", httpApiResponse));
+                    Logger.debug(string.Format(CultureInfo.InvariantCulture, "Received ErrorResponse:'{0}'", httpApiResponse));
 			    } else {
                     SetErrorResponse(httpApiResponse);
                     Logger.error(string.Format(CultureInfo.InvariantCulture, "Invalid response:'{0}'", httpApiResponse));
 			    }
-                Logger.info(string.Format("Response obtained: {0}", GetApiResponse()));
+                Logger.debug(string.Format("Response obtained: {0}", GetApiResponse()));
 			    SetResultStatus();
 			
 		    } else {
-			    Logger.info(string.Format(CultureInfo.InvariantCulture, "Got a 'null' Response for request:'{0}'\n", GetApiRequest()));
+                Logger.debug(string.Format(CultureInfo.InvariantCulture, "Got a 'null' Response for request:'{0}'\n", GetApiRequest()));
 		    }
 		    AfterExecute();
 	    }
@@ -173,6 +173,9 @@ namespace AuthorizeNet.Api.Controllers.Bases
 		    //validate not nulls
 	        ValidateAndSetMerchantAuthentication();
 
+            //set the client Id
+            SetClientId();
+
 		    //validate nulls
 		    var merchantAuthenticationType = request.merchantAuthentication;
 		    //if ( null != ) throw new IllegalArgumentException(" needs to be null");
@@ -180,14 +183,14 @@ namespace AuthorizeNet.Api.Controllers.Bases
 		    //TODO
             /*
 		    if ( null != merchantAuthenticationType.Item.GetType().   sessionToken) throw new IllegalArgumentException("SessionToken needs to be null");
-		    if ( null != merchantAuthenticationType.getPassword()) throw new IllegalArgumentException("Password needs to be null");
+		    if ( null != merchantAuthenticationType.getPass_word()) throw new IllegalArgumentException("Pass_word needs to be null");
 		    if ( null != merchantAuthenticationType.getMobileDeviceId()) throw new IllegalArgumentException("MobileDeviceId needs to be null");
              
 	    
 	        var impersonationAuthenticationType = merchantAuthenticationType.impersonationAuthentication;
 		    if ( null != impersonationAuthenticationType) throw new IllegalArgumentException("ImpersonationAuthenticationType needs to be null");
             */
-    //	    impersonationAuthenticationType.setPartnerLoginId(CnpApiLoginIdKey);
+            //	    impersonationAuthenticationType.setPartnerLoginId(CnpApiLoginIdKey);
     //	    impersonationAuthenticationType.setPartnerTransactionKey(CnpTransactionKey);
     //	    merchantAuthenticationType.setImpersonationAuthentication(impersonationAuthenticationType);
 
@@ -209,6 +212,12 @@ namespace AuthorizeNet.Api.Controllers.Bases
                     throw new ArgumentException("MerchantAuthentication cannot be null");
                 }
             }
+        }
+
+        private void SetClientId()
+        {
+            ANetApiRequest request = GetApiRequest();
+            request.clientId = "sdk-dotnet-" + Constants.SDKVersion;
         }
     }
 #pragma warning restore 1591

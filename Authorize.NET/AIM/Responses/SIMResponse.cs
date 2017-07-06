@@ -14,15 +14,6 @@ namespace AuthorizeNet {
             _post = post;
         }
 
-        /// <summary>
-        /// Validates that what was passed by Auth.net is valid
-        /// </summary>
-        public bool Validate(string merchantHash, string apiLogin) {
-            return Crypto.IsMatch(merchantHash, apiLogin, this.TransactionID, this.Amount, this.MD5Hash);
-
-        }
-
-
         public SIMResponse() : this(HttpContext.Current.Request.Form) { }
 
         public string MD5Hash {
@@ -36,6 +27,14 @@ namespace AuthorizeNet {
                 return FindKey("x_response_code");
             }
         }
+
+        public string ResponseReasonCode
+        {
+            get {
+                return FindKey("x_response_reason_code");
+            }
+        }
+
         public string Message {
             get {
                 return FindKey("x_response_reason_text");
@@ -98,6 +97,21 @@ namespace AuthorizeNet {
                 result = _post[key];
             }
 
+            return result;
+        }
+
+        public string GetValueByIndex(int position)
+        {
+            return ParseResponse(position);
+        }
+
+        internal string ParseResponse(int index)
+        {
+            var result = "";
+            if (_post.AllKeys.Count() > index)
+            {
+                result = _post[index];
+            }
             return result;
         }
 

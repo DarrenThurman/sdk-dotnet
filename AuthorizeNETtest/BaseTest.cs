@@ -1,20 +1,19 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using NUnit.Framework;
+using System;
 using System.Configuration;
-using System.Net;
+using AuthorizeNet.Utility;
 
 namespace AuthorizeNETtest
 {
     /// <summary>
     /// Summary description for UnitTest1
     /// </summary>
-    [TestClass]
+    [TestFixture]
     public class BaseTest
     {
-        protected static WebRequestCreateLocal LocalRequestObject = new WebRequestCreateLocal();
-        protected string ApiLogin = "";
-        protected string TransactionKey = "";
-        protected string ApiLoginCP = "";
-        protected string TransactionKeyCP = "";
+        protected static readonly WebRequestCreateLocal LocalRequestObject = new WebRequestCreateLocal();
+        protected string ApiLogin;
+        protected string TransactionKey;
 
         public BaseTest()
         {
@@ -24,35 +23,28 @@ namespace AuthorizeNETtest
         }
 
         /// <summary>
-        /// CheckLoginPassword - make sure that we are not using the default invalid login and password.
+        /// CheckApiLoginTransactionKey - make sure that we are not using the default invalid ApiLogin and TransactionKey.
         /// </summary>
-        protected string CheckLoginPassword()
+        protected string CheckApiLoginTransactionKey()
         {
-            ApiLogin = AuthorizeNet.Test.UnitTestData.GetPropertyFromNames(AuthorizeNet.Util.Constants.ENV_API_LOGINID, AuthorizeNet.Util.Constants.PROP_API_LOGINID);
-            TransactionKey = AuthorizeNet.Test.UnitTestData.GetPropertyFromNames(AuthorizeNet.Util.Constants.ENV_TRANSACTION_KEY, AuthorizeNet.Util.Constants.PROP_TRANSACTION_KEY);
-            ApiLoginCP = AuthorizeNet.Test.UnitTestData.GetPropertyFromNames(AuthorizeNet.Util.Constants.ENV_CP_API_LOGINID, AuthorizeNet.Util.Constants.PROP_CP_API_LOGINID);
-            TransactionKeyCP = AuthorizeNet.Test.UnitTestData.GetPropertyFromNames(AuthorizeNet.Util.Constants.ENV_CP_TRANSACTION_KEY, AuthorizeNet.Util.Constants.PROP_CP_TRANSACTION_KEY);
+            ApiLogin = AuthorizeNet.Test.UnitTestData.GetPropertyFromNames(AuthorizeNet.Util.Constants.EnvApiLoginid, AuthorizeNet.Util.Constants.PropApiLoginid);
+            TransactionKey = AuthorizeNet.Test.UnitTestData.GetPropertyFromNames(AuthorizeNet.Util.Constants.EnvTransactionKey, AuthorizeNet.Util.Constants.PropTransactionKey);
 
             string sRet = "";
             if ((string.IsNullOrEmpty(ApiLogin)) || (ApiLogin.Trim().Length == 0)
-                || (string.IsNullOrEmpty(TransactionKey)) || (TransactionKey.Trim().Length == 0)
-                || (string.IsNullOrEmpty(ApiLoginCP)) || (ApiLoginCP.Trim().Length == 0)
-                || (string.IsNullOrEmpty(TransactionKeyCP)) || (TransactionKeyCP.Trim().Length == 0))
+                || (string.IsNullOrEmpty(TransactionKey)) || (TransactionKey.Trim().Length == 0))
             {
                 LoadLoginTranskey();
             }
 
             if ((string.IsNullOrEmpty(ApiLogin)) || (ApiLogin.Trim().Length == 0)
-                || (string.IsNullOrEmpty(TransactionKey)) || (TransactionKey.Trim().Length == 0)
-                || (string.IsNullOrEmpty(ApiLoginCP)) || (ApiLoginCP.Trim().Length == 0)
-                || (string.IsNullOrEmpty(TransactionKeyCP)) || (TransactionKeyCP.Trim().Length == 0))
+                || (string.IsNullOrEmpty(TransactionKey)) || (TransactionKey.Trim().Length == 0))
             {
                 sRet = "Invalid Login / Password: blank \n";
             }
 
 #if !USELOCAL
-            if ((ApiLogin == "ApiLogin") || (TransactionKey == "TransactionKey")
-                || (ApiLoginCP == "ApiLoginCP") || (TransactionKeyCP == "TransactionKeyCP"))
+            if ((ApiLogin == "ApiLogin") || (TransactionKey == "TransactionKey"))
             {
                 sRet += "Invalid Login / Password \n";
             }
@@ -60,12 +52,17 @@ namespace AuthorizeNETtest
             return sRet;
         }
 
-        protected void LoadLoginTranskey()
+        private void LoadLoginTranskey()
         {
             ApiLogin = ConfigurationManager.AppSettings["ApiLogin"];
             TransactionKey = ConfigurationManager.AppSettings["TransactionKey"];
-            ApiLoginCP = ConfigurationManager.AppSettings["ApiLoginCP"];
-            TransactionKeyCP = ConfigurationManager.AppSettings["TransactionKeyCP"];
+        }
+
+        protected decimal getValidAmount()
+        {
+            var rnd = new AnetRandom(DateTime.Now.Millisecond);
+
+            return (decimal)rnd.Next(9999) / 100;
         }
     }
 }

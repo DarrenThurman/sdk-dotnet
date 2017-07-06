@@ -13,7 +13,9 @@ namespace AuthorizeNet {
         /// <param name="transactionKey">The merchant's transaction key</param>
         /// <param name="login">The merchant's Authorize.NET API Login</param>
         /// <param name="amount">The amount of the transaction</param>
-        /// <returns></returns>
+        /// <param name="sequence">The sequence</param>
+        /// <param name="timeStamp">The timeStamp</param>
+        /// <returns>string</returns>
         public static string GenerateFingerprint(string transactionKey, string login, decimal amount, string sequence, string timeStamp) {
             var result = "";
             var keyString = string.Format("{0}^{1}^{2}^{3}^", login, sequence, timeStamp.ToString(), amount.ToString());
@@ -22,23 +24,11 @@ namespace AuthorizeNet {
         }
 
         /// <summary>
-        /// Decrypts provided string parameter
-        /// </summary>
-        public static bool IsMatch(string key, string apiLogin, string transactionID,decimal amount, string expected) {
-
-            var unencrypted = string.Format("{0}{1}{2}{3}", key, apiLogin, transactionID, amount.ToString());
-
-            var md5 = new System.Security.Cryptography.MD5CryptoServiceProvider();
-            var hashed = Regex.Replace(BitConverter.ToString(md5.ComputeHash(ASCIIEncoding.Default.GetBytes(unencrypted))), "-", "");
-
-            // And return it
-            return hashed.Equals(expected);
-
-        }
-
-        /// <summary>
         /// Encrypts the key/value pair supplied using HMAC-MD5
         /// </summary>
+        /// <param name="key">key</param>
+        /// <param name="value">value</param>
+        /// <returns></returns>
         public static string EncryptHMAC(string key, string value) {
             // The first two lines take the input values and convert them from strings to Byte arrays
             byte[] HMACkey = (new System.Text.ASCIIEncoding()).GetBytes(key);

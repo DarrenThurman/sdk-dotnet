@@ -7,6 +7,7 @@ using System.IO;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Collections.Specialized;
+using System.Globalization;
 
 namespace AuthorizeNet {
 
@@ -227,14 +228,15 @@ namespace AuthorizeNet {
         /// <summary>
         /// Adds a Customer record to the current request
         /// </summary>
-        public IGatewayRequest AddCustomer(string ID, string first, string last, string address, string state, string zip) {
+        public IGatewayRequest AddCustomer(string ID, string email, string first, string last, string address, string city, string state, string zip) {
             Queue(ApiFields.FirstName, first);
             Queue(ApiFields.LastName, last);
             Queue(ApiFields.Address, address);
+            Queue(ApiFields.City, city);
             Queue(ApiFields.State, state);
             Queue(ApiFields.Zip, zip);
             Queue(ApiFields.CustomerID, ID);
-
+            Queue(ApiFields.Email, email);
             return this;
         }
 
@@ -263,14 +265,14 @@ namespace AuthorizeNet {
         /// Adds a detailed tax value to the request
         /// </summary>
         public IGatewayRequest AddFreight(decimal amount, string name, string description) {
-            this.Freight = string.Format("{0}<|>{1}<|>{2}", name, description, amount.ToString());
+            this.Freight = string.Format("{0}<|>{1}<|>{2}", name, description, amount.ToString(CultureInfo.InvariantCulture));
             return this;
         }
         /// <summary>
         /// Adds a tax value to the request
         /// </summary>
         public IGatewayRequest AddFreight(decimal amount) {
-            this.Freight = amount.ToString();
+            this.Freight = amount.ToString(CultureInfo.InvariantCulture);
             return this;
         }
 
@@ -280,14 +282,14 @@ namespace AuthorizeNet {
         /// Adds a detailed tax value to the request
         /// </summary>
         public IGatewayRequest AddDuty(decimal amount, string name, string description) {
-            this.Duty = string.Format("{0}<|>{1}<|>{2}", name, description, amount.ToString());
+            this.Duty = string.Format("{0}<|>{1}<|>{2}", name, description, amount.ToString(CultureInfo.InvariantCulture));
             return this;
         }
         /// <summary>
         /// Adds a tax value to the request
         /// </summary>
         public IGatewayRequest AddDuty(decimal amount) {
-            this.Duty = amount.ToString();
+            this.Duty = amount.ToString(CultureInfo.InvariantCulture);
             return this;
         }
 
@@ -295,14 +297,14 @@ namespace AuthorizeNet {
         /// Adds a detailed tax value to the request
         /// </summary>
         public IGatewayRequest AddTax(decimal amount, string name, string description) {
-            this.Tax = string.Format("{0}<|>{1}<|>{2}", name, description, amount.ToString());
+            this.Tax = string.Format("{0}<|>{1}<|>{2}", name, description, amount.ToString(CultureInfo.InvariantCulture));
             return this;
         }
         /// <summary>
         /// Adds a tax value to the request
         /// </summary>
         public IGatewayRequest AddTax(decimal amount) {
-            this.Tax = amount.ToString();
+            this.Tax = amount.ToString(CultureInfo.InvariantCulture);
             return this;
         }
         /// <summary>
@@ -316,12 +318,15 @@ namespace AuthorizeNet {
         /// <summary>
         /// Adds a Shipping Record to the current request
         /// </summary>
-        public IGatewayRequest AddShipping(string ID, string first, string last, string address, string state, string zip) {
+        public IGatewayRequest AddShipping(string ID, string email,string first, string last, string address, string city, string state, string zip) {
             Queue(ApiFields.ShipFirstName, first);
             Queue(ApiFields.ShipLastName, last);
             Queue(ApiFields.ShipAddress, address);
+            Queue(ApiFields.ShipCity, city);
             Queue(ApiFields.ShipState, state);
             Queue(ApiFields.ShipZip, zip);
+            Queue(ApiFields.CustomerID, ID);
+            Queue(ApiFields.Email, email);
             return this;
 
         }
@@ -346,7 +351,7 @@ namespace AuthorizeNet {
                 itemID,
                 name,
                 description,
-                quantity.ToString(), price.ToString(), taxable.ToString());
+                quantity.ToString(), price.ToString(CultureInfo.InvariantCulture), taxable.ToString());
             Post.Add(sFld, lineFormat);
             return this;
         }
@@ -861,7 +866,15 @@ namespace AuthorizeNet {
             get { return Get(ApiFields.Zip); }
             set { Queue(ApiFields.Zip, value); }
         }
-
+        /// <summary>
+        /// Gets or sets the solution id.
+        /// </summary>
+        /// <value>The solution id.</value>
+        public string SolutionID
+        {
+            get { return Get(ApiFields.SolutionID); }
+            set { Queue(ApiFields.SolutionID, value); }
+        }
 
 
         #endregion

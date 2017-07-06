@@ -2,6 +2,7 @@
 using AuthorizeNet;
 using System.Configuration;
 using CoffeeShopWebApp.Model;
+using System.Globalization;
 
 namespace CoffeeShopWebApp {
     public partial class Order : System.Web.UI.Page {
@@ -32,6 +33,8 @@ namespace CoffeeShopWebApp {
             //set the amount - you can also set this from the page itself
             //you have to have a field named "x_amount"
             apiRequest.Queue(ApiFields.Amount, order.Price.ToString());
+            //You can set your solution ID here.
+            apiRequest.SolutionID = "AAA100302";
 
             //send to Auth.NET
             var response = gate.Send(apiRequest);
